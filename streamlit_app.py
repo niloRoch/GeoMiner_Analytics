@@ -79,7 +79,7 @@ def load_data():
             return pd.read_csv(processed_path)
         
         # Se não existir, carregar e processar dados brutos
-        raw_path = "data/raw/Emp-CFEM.xlsx"
+        raw_path = "data/raw/Emp-CFEM.csv"
         if os.path.exists(raw_path):
             processor = CFEMDataProcessor()
             df = processor.load_excel_data(raw_path)
@@ -804,4 +804,5 @@ def render_reports(df, stats):
             )
 
 if __name__ == "__main__":
+
     main()
