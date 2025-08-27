@@ -74,7 +74,7 @@ def load_data():
     """Carrega dados do CFEM"""
     try:
         # Tentar carregar dados processados primeiro
-        processed_path = "data/processed/cfem_cleaned.csv"
+        processed_path = "data/raw/Emp-CFEM.csv"
         if os.path.exists(processed_path):
             return pd.read_csv(processed_path)
         
@@ -806,3 +806,4 @@ def render_reports(df, stats):
 if __name__ == "__main__":
 
     main()
+
