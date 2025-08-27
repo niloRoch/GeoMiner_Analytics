@@ -39,42 +39,51 @@ class CFEMDataProcessor:
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Realiza limpeza básica dos dados
-        
-        Args:
-            df: DataFrame original
-            
-        Returns:
-            DataFrame limpo
         """
         df_clean = df.copy()
-        
+    
         # Remover linhas completamente vazias
         df_clean = df_clean.dropna(how='all')
-        
+    
         # Padronizar nomes de colunas
         df_clean.columns = df_clean.columns.str.strip().str.upper()
-        
+    
+        # Corrigir possíveis variações de nomes de colunas
+        rename_map = {
+            'UF': 'ESTADO',
+            'MUNICIPIO': 'MUNICIPIO(S)',
+            'MUNICIPIOS': 'MUNICIPIO(S)',
+            'PRIMEIRODESUB': 'PRIMEIRODESUBS'
+        }
+        df_clean.rename(columns=rename_map, inplace=True)
+    
+        # Validar colunas essenciais
+        required = ['TITULAR', 'MUNICIPIO(S)', 'ESTADO', 'PRIMEIRODESUBS', 'CFEM']
+        missing = [c for c in required if c not in df_clean.columns]
+        if missing:
+            raise ValueError(f"Colunas obrigatórias ausentes: {missing}. Colunas encontradas: {df_clean.columns.tolist()}")
+    
         # Limpar e padronizar dados de texto
         text_columns = ['TITULAR', 'MUNICIPIO(S)', 'ESTADO', 'PRIMEIRODESUBS']
         for col in text_columns:
             if col in df_clean.columns:
                 df_clean[col] = df_clean[col].astype(str).str.strip().str.upper()
-        
+    
         # Validar e limpar coordenadas
         df_clean = self._clean_coordinates(df_clean)
-        
+    
         # Validar e limpar valores CFEM
         df_clean = self._clean_cfem_values(df_clean)
-        
+    
         # Padronizar nomes de estados
         df_clean = self._standardize_states(df_clean)
-        
+    
         # Padronizar nomes de empresas
         df_clean = self._standardize_companies(df_clean)
-        
-        self.logger.info(f"Limpeza concluída: {df_clean.shape[0]} registros mantidos")
-        return df_clean
     
+        self.logger.info(f"Limpeza concluída: {df_clean.shape[0]} registros mantidos")
+        return df_clean    
+        
     def _clean_coordinates(self, df: pd.DataFrame) -> pd.DataFrame:
         """Limpa e valida coordenadas geográficas"""
         df_clean = df.copy()
@@ -353,4 +362,5 @@ class CFEMDataProcessor:
             'inconsistencias_geograficas': inconsistencies,
             'total_com_coordenadas': total_with_coords,
             'percentual_inconsistencias': (inconsistencies / total_with_coords * 100) if total_with_coords > 0 else 0
+
         }
