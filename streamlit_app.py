@@ -157,7 +157,8 @@ def main():
         df = load_data()
     
     if df is None:
-        st.stop()
+        st.write("Colunas disponíveis:", df.columns.tolist())
+        st.write("Amostra de dados:", df.head())
     
     # Sidebar - Filtros
     st.sidebar.subheader("🔍 Filtros")
@@ -806,4 +807,5 @@ def render_reports(df, stats):
 if __name__ == "__main__":
 
     main()
+
 
