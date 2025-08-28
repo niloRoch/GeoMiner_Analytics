@@ -6,8 +6,8 @@ import plotly.express as px
 from datetime import datetime
 import io
 import base64
-from data_processor import CFEMDataProcessor
-from visualizations import CFEMVisualizations
+from src import CFEMDataProcessor
+from src import CFEMVisualizations
 import json
 import zipfile
 import os
@@ -647,4 +647,5 @@ def main():
     """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
+
     main()
