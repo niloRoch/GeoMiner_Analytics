@@ -560,19 +560,20 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 ```
 
-## 🌟 Agradecimentos
+## Contato
 
-Agradecimentos especiais a:
-
-- **Comunidade Streamlit**: Pelo framework incrível
-- **Contribuidores**: A todos que ajudaram no desenvolvimento
-- **Beta Testers**: Por feedback valioso durante o desenvolvimento
-- **Setor Mineral Brasileiro**: Pela relevância e importância dos dados
+[![Website](https://img.shields.io/badge/Website-4c1d95?style=for-the-badge&logo=firefox&logoColor=a855f7)](https://www.nilorocha.tech)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/nilo-rocha-)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/niloRoch)
+[![CV](https://img.shields.io/badge/Bold-312e81?style=for-the-badge&logo=readthedocs&logoColor=8b5cf6)](https://bold.pro/my/nilo-rocha)
+[![Email](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:nilo.roch4@gmail.com)
 
 ---
 
 <div align="center">
 
 [⬆️ Voltar ao topo](#-cfem-analytics---sistema-de-análise-minerária)
+ 
+<img src="https://github.com/niloRoch/datasets/blob/main/assets/LOGO.png" alt="Tech Vision" width="99" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);"/>
 
 </div>
