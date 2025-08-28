@@ -13,195 +13,144 @@ from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
 
+
 class CFEMAnalytics:
     """
     Classe para análises avançadas e machine learning dos dados CFEM
     """
-    
+
     def __init__(self):
         self.scaler = StandardScaler()
         self.label_encoders = {}
         self.models = {}
+
+    # ======================================================
+    # CLUSTERING
+    # ======================================================
         
-    def perform_clustering_analysis(self, df: pd.DataFrame, 
-                                  features: Optional[List[str]] = None) -> Dict[str, Any]:
-        """
-        Realiza análise de clustering nas operações minerárias
-        
-        Args:
-            df: DataFrame com dados processados
-            features: Lista de features para clustering (opcional)
-            
-        Returns:
-            Resultados do clustering
-        """
+    def perform_clustering_analysis(
+        self, df: pd.DataFrame, features: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """Executa KMeans, DBSCAN e PCA nos dados"""
+
         if features is None:
-            features = ['CFEM', 'LONGITUDE', 'LATITUDE']
-        
-        # Preparar dados
+            features = ["CFEM", "LONGITUDE", "LATITUDE"]
+
         available_features = [f for f in features if f in df.columns]
         if not available_features:
             return {"error": "Nenhuma feature válida encontrada"}
-        
-        df_cluster = df[available_features + ['TITULAR', 'ESTADO', 'PRIMEIRODESUBS']].copy()
-        df_cluster = df_cluster.dropna()
-        
-        if len(df_cluster) < 3:
-            return {"error": "Dados insuficientes para clustering"}
-        
-        # Normalizar features numéricas
+
+        df_cluster = df[available_features + ["TITULAR", "ESTADO", "PRIMEIRODESUBS"]].dropna()
+        if len(df_cluster) < 5:
+            return {"error": "Dados insuficientes para clustering (mín. 5 registros)"}
+
+        # Normalização
         numeric_features = df_cluster[available_features].select_dtypes(include=[np.number]).columns
         if len(numeric_features) == 0:
-            return {"error": "Nenhuma feature numérica encontrada"}
-            
+            return {"error": "Nenhuma feature numérica disponível"}
+
         X_scaled = self.scaler.fit_transform(df_cluster[numeric_features])
-        
-        # K-Means Clustering
-        kmeans_results = self._perform_kmeans_clustering(X_scaled, df_cluster)
-        
-        # DBSCAN Clustering
-        dbscan_results = self._perform_dbscan_clustering(X_scaled, df_cluster)
-        
-        # Análise de componentes principais
-        pca_results = self._perform_pca_analysis(X_scaled, df_cluster, numeric_features)
-        
+
         return {
-            'kmeans': kmeans_results,
-            'dbscan': dbscan_results,
-            'pca': pca_results,
-            'features_used': available_features,
-            'data_shape': df_cluster.shape
+            "kmeans": self._perform_kmeans(X_scaled, df_cluster),
+            "dbscan": self._perform_dbscan(X_scaled, df_cluster),
+            "pca": self._perform_pca(X_scaled, df_cluster, numeric_features),
+            "features_used": available_features,
+            "data_shape": df_cluster.shape,
         }
     
-    def _perform_kmeans_clustering(self, X: np.ndarray, df: pd.DataFrame) -> Dict:
-        """Executa K-Means clustering"""
-        results = {}
-        
-        # Encontrar número ótimo de clusters
-        max_k = min(11, len(X)//2, 10)
-        k_range = range(2, max_k)
-        inertias = []
-        silhouette_scores = []
-        
+    def _perform_kmeans(self, X: np.ndarray, df: pd.DataFrame) -> Dict:
+        """Executa KMeans clustering com seleção automática de K"""
+
+        max_k = min(10, len(X) - 1)
+        if max_k < 2:
+            return {"error": "Poucos registros para KMeans"}
+
+        inertias, silhouette_scores = [], []
+        k_range = range(2, max_k + 1)
+
         for k in k_range:
-            if k < len(X):
-                kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-                labels = kmeans.fit_predict(X)
-                inertias.append(kmeans.inertia_)
-                if len(set(labels)) > 1:
-                    silhouette_scores.append(silhouette_score(X, labels))
-                else:
-                    silhouette_scores.append(0)
-        
-        if not inertias:
-            return {"error": "Não foi possível executar clustering"}
-        
-        # Usar cotovelo para determinar K ótimo
-        optimal_k = self._find_elbow_point(inertias) + 2  # +2 porque k_range começa em 2
-        optimal_k = min(optimal_k, len(X)-1)
-        
-        # Executar clustering com K ótimo
+            kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+            labels = kmeans.fit_predict(X)
+            inertias.append(kmeans.inertia_)
+            silhouette_scores.append(
+                silhouette_score(X, labels) if len(set(labels)) > 1 else 0
+            )
+
+        # Define k ótimo pelo "cotovelo"
+        optimal_k = self._find_elbow_point(inertias) + 2
+        optimal_k = min(optimal_k, max_k)
+
         kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
-        cluster_labels = kmeans.fit_predict(X)
-        
-        # Adicionar labels ao dataframe
+        labels = kmeans.fit_predict(X)
+
         df_result = df.copy()
-        df_result['Cluster_KMeans'] = cluster_labels
-        
-        # Analisar clusters
-        cluster_analysis = df_result.groupby('Cluster_KMeans').agg({
-            'CFEM': ['count', 'mean', 'sum'] if 'CFEM' in df_result.columns else ['count'],
-            'TITULAR': 'nunique',
-            'ESTADO': 'nunique',
-            'PRIMEIRODESUBS': 'nunique'
-        }).round(2)
-        
-        results = {
-            'optimal_k': optimal_k,
-            'labels': cluster_labels,
-            'centroids': kmeans.cluster_centers_,
-            'inertia': kmeans.inertia_,
-            'silhouette_score': silhouette_score(X, cluster_labels) if len(set(cluster_labels)) > 1 else 0,
-            'cluster_analysis': cluster_analysis,
-            'data_with_clusters': df_result
+        df_result["Cluster_KMeans"] = labels
+
+        return {
+            "optimal_k": optimal_k,
+            "labels": labels,
+            "silhouette_score": silhouette_score(X, labels) if len(set(labels)) > 1 else 0,
+            "data_with_clusters": df_result,
         }
-        
-        return results
     
-    def _perform_dbscan_clustering(self, X: np.ndarray, df: pd.DataFrame) -> Dict:
-        """Executa DBSCAN clustering"""
-        # Testar diferentes valores de eps
+    def _perform_dbscan(self, X: np.ndarray, df: pd.DataFrame) -> Dict:
+        """Executa DBSCAN clustering com ajuste automático de eps"""
+
         eps_values = np.arange(0.1, 2.0, 0.1)
-        best_eps = 0.5
-        best_score = -1
-        
+        best_eps, best_score = 0.5, -1
+
         for eps in eps_values:
-            dbscan = DBSCAN(eps=eps, min_samples=3)
-            labels = dbscan.fit_predict(X)
+            labels = DBSCAN(eps=eps, min_samples=3).fit_predict(X)
             if len(set(labels)) > 1 and -1 not in labels:
                 try:
                     score = silhouette_score(X, labels)
                     if score > best_score:
-                        best_score = score
-                        best_eps = eps
-                except:
+                        best_score, best_eps = score, eps
+                except Exception:
                     continue
-        
-        # Executar DBSCAN com melhor eps
+
         dbscan = DBSCAN(eps=best_eps, min_samples=3)
-        cluster_labels = dbscan.fit_predict(X)
-        
-        # Adicionar labels ao dataframe
+        labels = dbscan.fit_predict(X)
+
         df_result = df.copy()
-        df_result['Cluster_DBSCAN'] = cluster_labels
-        
-        # Analisar clusters (excluindo ruído)
-        cluster_data = df_result[df_result['Cluster_DBSCAN'] != -1]
-        if len(cluster_data) > 0:
-            cluster_analysis = cluster_data.groupby('Cluster_DBSCAN').agg({
-                'CFEM': ['count', 'mean', 'sum'] if 'CFEM' in df_result.columns else ['count'],
-                'TITULAR': 'nunique',
-                'ESTADO': 'nunique',
-                'PRIMEIRODESUBS': 'nunique'
-            }).round(2)
-        else:
-            cluster_analysis = pd.DataFrame()
-        
-        results = {
-            'eps': best_eps,
-            'labels': cluster_labels,
-            'n_clusters': len(set(cluster_labels)) - (1 if -1 in cluster_labels else 0),
-            'n_noise': list(cluster_labels).count(-1),
-            'silhouette_score': best_score if best_score > -1 else 0,
-            'cluster_analysis': cluster_analysis,
-            'data_with_clusters': df_result
+        df_result["Cluster_DBSCAN"] = labels
+
+        return {
+            "eps": best_eps,
+            "labels": labels,
+            "n_clusters": len(set(labels)) - (1 if -1 in labels else 0),
+            "n_noise": list(labels).count(-1),
+            "silhouette_score": best_score if best_score > -1 else 0,
+            "data_with_clusters": df_result,
         }
-        
-        return results
     
-    def _perform_pca_analysis(self, X: np.ndarray, df: pd.DataFrame, feature_names: List[str]) -> Dict:
-        """Executa análise de componentes principais"""
+    def _perform_pca(self, X: np.ndarray, df: pd.DataFrame, feature_names: List[str]) -> Dict:
+        """Executa PCA para redução de dimensionalidade"""
         pca = PCA()
         X_pca = pca.fit_transform(X)
-        
-        # Calcular variância explicada
-        explained_variance_ratio = pca.explained_variance_ratio_
-        cumulative_variance = np.cumsum(explained_variance_ratio)
-        
-        # Determinar número de componentes para 95% da variância
-        n_components_95 = np.argmax(cumulative_variance >= 0.95) + 1
-        
-        results = {
-            'explained_variance_ratio': explained_variance_ratio,
-            'cumulative_variance': cumulative_variance,
-            'n_components_95': n_components_95,
-            'components': pca.components_,
-            'transformed_data': X_pca,
-            'feature_names': feature_names
+
+        return {
+            "explained_variance_ratio": pca.explained_variance_ratio_,
+            "cumulative_variance": np.cumsum(pca.explained_variance_ratio_),
+            "n_components_95": np.argmax(np.cumsum(pca.explained_variance_ratio_) >= 0.95) + 1,
+            "components": pca.components_,
+            "transformed_data": X_pca,
+            "feature_names": feature_names,
         }
-        
-        return results
     
+    def _find_elbow_point(self, inertias: List[float]) -> int:
+        """Heurística simples para ponto de cotovelo"""
+        if len(inertias) < 2:
+            return 0
+        diffs = np.diff(inertias)
+        return int(np.argmin(diffs))
+    
+
+    # ======================================================
+    # DETECÇÃO DE ANOMALIAS
+    # ======================================================
+
     def detect_anomalies(self, df: pd.DataFrame, features: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Detecta anomalias nos dados usando Isolation Forest
@@ -263,6 +212,10 @@ class CFEMAnalytics:
             'features_used': available_features
         }
     
+    # ======================================================
+    # MODELO PREDITIVO
+    # ======================================================
+
     def build_predictive_model(self, df: pd.DataFrame, 
                              target: str = 'CFEM',
                              features: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -359,6 +312,10 @@ class CFEMAnalytics:
         
         return results
     
+    # ======================================================
+    # TESTES ESTATÍSTICOS
+    # ======================================================
+
     def perform_statistical_tests(self, df: pd.DataFrame) -> Dict[str, Any]:
         """
         Realiza testes estatísticos nos dados
@@ -436,6 +393,10 @@ class CFEMAnalytics:
         
         return results
     
+    # ======================================================
+    # CONCENTRAÇÃO DE MERCADO
+    # ======================================================
+
     def calculate_market_concentration(self, df: pd.DataFrame, 
                                      groupby_col: str = 'TITULAR') -> Dict[str, float]:
         """
