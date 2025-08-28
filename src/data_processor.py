@@ -390,3 +390,19 @@ class CFEMDataProcessor:
 
         }
 
+def check_data_health(df: pd.DataFrame, name: str = "DataFrame") -> None:
+    """Exibe estatísticas rápidas do DataFrame para debug"""
+    import streamlit as st
+    
+    st.subheader(f"🔎 Diagnóstico de {name}")
+    st.write("Shape:", df.shape)
+    st.write("Colunas:", list(df.columns))
+    
+    for col in df.columns:
+        st.write(f"📊 {col}: {df[col].notna().sum()} valores válidos / {df[col].isna().sum()} nulos")
+        if df[col].dtype in ["float64", "int64"]:
+            st.write(f"   ➝ min={df[col].min()}, max={df[col].max()}")
+        elif df[col].dtype == "object":
+            st.write(f"   ➝ exemplos: {df[col].dropna().unique()[:5]}")
+
+
