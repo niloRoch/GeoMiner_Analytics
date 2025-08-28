@@ -4,9 +4,10 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from cfem_analytics.data_processor import CFEMDataProcessor, check_data_health
-from geo_analysis import CFEMGeoAnalysis
-from visualizations import CFEMVisualizations
+from src.data_processor import CFEMDataProcessor, check_data_health
+from src.analytics import CFEMAnalytics
+from src.visualizations import CFEMVisualizations
+from src.geo_analysis import CFEMGeoAnalysis
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -405,6 +406,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
