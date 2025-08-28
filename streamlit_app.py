@@ -71,33 +71,45 @@ st.markdown("""
 # Funções auxiliares
 @st.cache_data
 def load_data():
-    """Carrega dados do CFEM"""
     try:
-        # Tentar carregar dados processados primeiro
-        processed_path = "data/raw/Emp-CFEM.csv"
+        processed_path = "data/processed/cfem_cleaned.csv"
+        processor = CFEMDataProcessor()
+
         if os.path.exists(processed_path):
-            return pd.read_csv(processed_path)
-        
-        # Se não existir, carregar e processar dados brutos
-        raw_path = "data/raw/Emp-CFEM.csv"
-        if os.path.exists(raw_path):
-            processor = CFEMDataProcessor()
-            df = processor.load_excel_data(raw_path)
-            df = processor.clean_data(df)
-            df = processor.enrich_data(df)
-            
-            # Salvar dados processados
-            os.makedirs("data/processed", exist_ok=True)
-            df.to_csv(processed_path, index=False)
-            
-            return df
+            df = pd.read_csv(processed_path)
         else:
-            st.error("Arquivo de dados não encontrado. Por favor, coloque o arquivo 'Emp-CFEM.xlsx' na pasta 'data/raw/'")
-            return None
-            
+            raw_path = "data/raw/Emp-CFEM.xlsx"
+            if not os.path.exists(raw_path):
+                st.error("Arquivo de dados não encontrado. Coloque 'Emp-CFEM.xlsx' em 'data/raw/'")
+                return None
+            df = processor.load_excel_data(raw_path)
+
+        # --- NORMALIZAÇÃO/ALIAS DE COLUNAS (garante 'ESTADO') ---
+        df.columns = df.columns.str.strip().str.upper()
+        alias = {
+            'UF': 'ESTADO',
+            'ESTADO(S)': 'ESTADO',
+            'MUNICIPIO': 'MUNICIPIO(S)',
+            'MUNICÍPIO': 'MUNICIPIO(S)',
+            'PRIMEIRO DE SUBS': 'PRIMEIRODESUBS',
+            'SUBSTÂNCIA': 'PRIMEIRODESUBS',
+            'SUBSTANCIA': 'PRIMEIRODESUBS'
+        }
+        df = df.rename(columns=alias)
+
+        # Reaplica o pipeline para garantir limpeza (vírgula decimal, etc.)
+        df = processor.clean_data(df)
+        df = processor.enrich_data(df)
+
+        # (opcional) salva consistente
+        os.makedirs("data/processed", exist_ok=True)
+        df.to_csv(processed_path, index=False)
+
+        return df
     except Exception as e:
         st.error(f"Erro ao carregar dados: {str(e)}")
         return None
+
 
 @st.cache_data
 def calculate_basic_stats(df):
