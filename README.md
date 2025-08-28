@@ -535,7 +535,7 @@ Este projeto utiliza tecnologias open source incríveis:
 
 Precisa de ajuda? Entre em contato:
 
-- **LinkedIn**: [Seu Perfil](https://linkedin.com/in/nilo-rocha-)
+- **LinkedIn**: [Nilo Rocha](https://linkedin.com/in/nilo-rocha-)
 - **Issues**: [GitHub Issues](https://github.com/niloRoch/cfem-analytics/issues)
 
 
@@ -574,4 +574,5 @@ copies or substantial portions of the Software.
 <img src="https://github.com/niloRoch/datasets/blob/main/assets/LOGO.png" alt="Tech Vision" width="99" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);"/>
 
 </div>
+
 
