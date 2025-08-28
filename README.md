@@ -6,7 +6,7 @@
 
 ## 📋 Sobre o Projeto
 
-O **CFEM Analytics** é uma aplicação web interativa desenvolvida em **Streamlit** para análise abrangente dos dados de **Compensação Financeira pela Exploração de Recursos Minerais (CFEM)** no Brasil. 
+O **Geominer Analytics** é uma aplicação web interativa desenvolvida em **Streamlit** para análise abrangente dos dados de **Exploração de Recursos Minerais (CFEM)** no Brasil. 
 
 O sistema oferece visualizações dinâmicas, análises estatísticas avançadas, insights geoespaciais e modelos de machine learning para compreender o panorama da mineração brasileira.
 
@@ -535,10 +535,9 @@ Este projeto utiliza tecnologias open source incríveis:
 
 Precisa de ajuda? Entre em contato:
 
-- **Email**: suporte@cfem-analytics.com
 - **LinkedIn**: [Seu Perfil](https://linkedin.com/in/nilo-rocha-)
 - **Issues**: [GitHub Issues](https://github.com/niloRoch/cfem-analytics/issues)
-- **Documentação**: [Wiki do Projeto](https://github.com/niloRoch/cfem-analytics/wiki)
+
 
 ## 📄 Licença
 
@@ -560,8 +559,6 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 ```
 
-## Contato
-
 [![Website](https://img.shields.io/badge/Website-4c1d95?style=for-the-badge&logo=firefox&logoColor=a855f7)](https://www.nilorocha.tech)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/nilo-rocha-)
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/niloRoch)
@@ -577,3 +574,4 @@ copies or substantial portions of the Software.
 <img src="https://github.com/niloRoch/datasets/blob/main/assets/LOGO.png" alt="Tech Vision" width="99" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);"/>
 
 </div>
+
