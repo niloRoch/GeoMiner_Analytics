@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import scipy.stats as stats
 from sklearn.preprocessing import StandardScaler
-from visualizations import CFEMVisualizations
+from src import CFEMVisualizations
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -686,4 +686,5 @@ def main():
             st.dataframe(summary_df, use_container_width=True, hide_index=True)
 
 if __name__ == "__main__":
+
     main()
