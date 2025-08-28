@@ -7,7 +7,8 @@ from plotly.subplots import make_subplots
 import folium
 from folium import plugins
 import streamlit_folium as st_folium
-from geo_analysis import CFEMGeoAnalysis
+from src import CFEMGeoAnalysis
+from src import CFEMVisualizations
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
@@ -824,4 +825,5 @@ def main():
             st.dataframe(state_spatial, use_container_width=True)
 
 if __name__ == "__main__":
+
     main()
