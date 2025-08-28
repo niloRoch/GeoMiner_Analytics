@@ -71,20 +71,53 @@ st.markdown("""
 # Funções auxiliares
 @st.cache_data
 def load_data():
+    """
+    Carrega dados CFEM.
+    Prioridade:
+    1. data/processed/cfem_cleaned.csv
+    2. data/raw/Emp-CFEM.xlsx
+    3. data/raw/Emp-CFEM.csv
+    4. Dados de exemplo (get_sample_data)
+    """
     try:
-        processed_path = "data/processed/cfem_cleaned.csv"
         processor = CFEMDataProcessor()
+        processed_path = "data/processed/cfem_cleaned.csv"
+        raw_excel = "data/raw/Emp-CFEM.xlsx"
+        raw_csv = "data/raw/Emp-CFEM.csv"
 
+        # 1. CSV já processado
         if os.path.exists(processed_path):
             df = pd.read_csv(processed_path)
-        else:
-            raw_path = "data/raw/Emp-CFEM.xlsx"
-            if not os.path.exists(raw_path):
-                st.error("Arquivo de dados não encontrado. Coloque 'Emp-CFEM.xlsx' em 'data/raw/'")
-                return None
-            df = processor.load_excel_data(raw_path)
 
-        # --- NORMALIZAÇÃO/ALIAS DE COLUNAS (garante 'ESTADO') ---
+        # 2. Excel bruto
+        elif os.path.exists(raw_excel):
+            df = processor.load_excel_data(raw_excel)
+            df = processor.clean_data(df)
+            df = processor.enrich_data(df)
+            os.makedirs("data/processed", exist_ok=True)
+            df.to_csv(processed_path, index=False)
+
+        # 3. CSV bruto
+        elif os.path.exists(raw_csv):
+            # tenta com vírgula como separador decimal
+            try:
+                df = pd.read_csv(raw_csv, sep=";", decimal=",")
+            except Exception:
+                # fallback comum
+                df = pd.read_csv(raw_csv, sep=",", decimal=".")
+
+            df = processor.clean_data(df)
+            df = processor.enrich_data(df)
+            os.makedirs("data/processed", exist_ok=True)
+            df.to_csv(processed_path, index=False)
+
+        # 4. Dados de exemplo
+        else:
+            from src import get_sample_data
+            st.warning("Nenhum arquivo de dados encontrado. Usando dados de exemplo.")
+            df = get_sample_data()
+
+        # --- Normaliza colunas essenciais ---
         df.columns = df.columns.str.strip().str.upper()
         alias = {
             'UF': 'ESTADO',
@@ -97,15 +130,16 @@ def load_data():
         }
         df = df.rename(columns=alias)
 
-        # Reaplica o pipeline para garantir limpeza (vírgula decimal, etc.)
-        df = processor.clean_data(df)
-        df = processor.enrich_data(df)
-
-        # (opcional) salva consistente
-        os.makedirs("data/processed", exist_ok=True)
-        df.to_csv(processed_path, index=False)
+        # --- Valida colunas obrigatórias ---
+        from src import CFEM_COLUMNS
+        required = set(CFEM_COLUMNS['required'])
+        missing = required - set(df.columns)
+        if missing:
+            st.error(f"Colunas obrigatórias ausentes: {sorted(missing)}")
+            st.stop()
 
         return df
+
     except Exception as e:
         st.error(f"Erro ao carregar dados: {str(e)}")
         return None
@@ -819,5 +853,6 @@ def render_reports(df, stats):
 if __name__ == "__main__":
 
     main()
+
 
 
