@@ -37,26 +37,51 @@ class CFEMDataProcessor:
             raise
     
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Realiza limpeza básica dos dados
-        """
         df_clean = df.copy()
-    
-        # Remover linhas completamente vazias
+
+        # 1) Remove linhas totalmente vazias
         df_clean = df_clean.dropna(how='all')
-    
-        # Padronizar nomes de colunas
+
+        # 2) Padroniza nomes
         df_clean.columns = df_clean.columns.str.strip().str.upper()
-    
-        # Corrigir possíveis variações de nomes de colunas
-        rename_map = {
+
+        # 3) Aliases de colunas comuns (garante nomes do schema)
+        alias = {
             'UF': 'ESTADO',
+            'ESTADO(S)': 'ESTADO',
             'MUNICIPIO': 'MUNICIPIO(S)',
-            'MUNICIPIOS': 'MUNICIPIO(S)',
-            'PRIMEIRODESUB': 'PRIMEIRODESUBS'
+            'MUNICÍPIO': 'MUNICIPIO(S)',
+            'PRIMEIRO DE SUBS': 'PRIMEIRODESUBS',
+            'SUBSTÂNCIA': 'PRIMEIRODESUBS',
+            'SUBSTANCIA': 'PRIMEIRODESUBS'
         }
-        df_clean.rename(columns=rename_map, inplace=True)
-    
+        df_clean = df_clean.rename(columns=alias)
+
+        # 4) Texto → maiúsculas/coerência
+        for col in ['TITULAR', 'MUNICIPIO(S)', 'ESTADO', 'PRIMEIRODESUBS']:
+            if col in df_clean.columns:
+                df_clean[col] = df_clean[col].astype(str).str.strip().str.upper()
+
+        # 5) Trata vírgula decimal antes do to_numeric
+        for col in ['LONGITUDE', 'LATITUDE', 'CFEM']:
+            if col in df_clean.columns:
+                df_clean[col] = (
+                    df_clean[col]
+                    .astype(str)
+                    .str.replace(r'\.', '', regex=True)  # remove separador de milhar (se existir)
+                    .str.replace(',', '.', regex=False)  # vírgula → ponto
+                )
+                df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
+
+        # 6) Demais validações já existentes
+        df_clean = self._clean_coordinates(df_clean)   # mantém
+        df_clean = self._clean_cfem_values(df_clean)   # mantém
+        df_clean = self._standardize_states(df_clean)  # mantém
+        df_clean = self._standardize_companies(df_clean)  # mantém
+
+        self.logger.info(f"Limpeza concluída: {df_clean.shape[0]} registros mantidos")
+        return df_clean
+        
         # Validar colunas essenciais
         required = ['TITULAR', 'MUNICIPIO(S)', 'ESTADO', 'PRIMEIRODESUBS', 'CFEM']
         missing = [c for c in required if c not in df_clean.columns]
@@ -364,3 +389,4 @@ class CFEMDataProcessor:
             'percentual_inconsistencias': (inconsistencies / total_with_coords * 100) if total_with_coords > 0 else 0
 
         }
+
