@@ -4,7 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from visualizations import CFEMVisualizations
+from src import CFEMVisualizations
 
 # Configuração da página
 st.set_page_config(
@@ -583,4 +583,5 @@ def main():
         )
 
 if __name__ == "__main__":
+
     main()
