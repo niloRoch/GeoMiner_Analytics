@@ -9,6 +9,7 @@ from streamlit_folium import st_folium
 import logging
 import os
 from pathlib import Path
+from cfem_analytics.data_processor import CFEMDataProcessor, check_data_health
 
 # Configurar página
 st.set_page_config(
@@ -27,6 +28,26 @@ try:
 except ImportError:
     st.error("Erro ao importar módulos. Verifique se todos os arquivos estão no diretório 'src/'")
     st.stop()
+
+
+# Inicializa o processador
+processor = CFEMDataProcessor()
+
+# Upload do arquivo
+uploaded_file = st.file_uploader("📂 Envie um arquivo Excel com dados CFEM", type=["xlsx"])
+
+if uploaded_file:
+    # 1. Carrega dados brutos
+    df_raw = processor.load_excel_data(uploaded_file)
+    check_data_health(df_raw, "Dados brutos")   # <-- debug inicial
+
+    # 2. Limpa os dados
+    df_clean = processor.clean_data(df_raw)
+    check_data_health(df_clean, "Dados limpos") # <-- debug após limpeza
+
+    # 3. Continua fluxo normal (enriquecer, análises, gráficos etc.)
+    df_enriched = processor.enrich_data(df_clean)
+    check_data_health(df_enriched, "Dados enriquecidos")
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -853,6 +874,7 @@ def render_reports(df, stats):
 if __name__ == "__main__":
 
     main()
+
 
 
 
