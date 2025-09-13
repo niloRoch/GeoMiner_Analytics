@@ -521,19 +521,8 @@ SECURITY_CONFIG = {
 - [ ] **Automação**: Pipeline de dados automatizado
 - [ ] **Multi-idioma**: Suporte a inglês e espanhol
 
-## 🏆 Reconhecimentos
-
-Este projeto utiliza tecnologias open source incríveis:
-
-- **[Streamlit](https://streamlit.io/)**: Framework para aplicações web
-- **[Plotly](https://plotly.com/)**: Visualizações interativas
-- **[Pandas](https://pandas.pydata.org/)**: Manipulação de dados
-- **[Scikit-learn](https://scikit-learn.org/)**: Machine learning
-- **[Folium](https://folium.readthedocs.io/)**: Mapas interativos
 
 ## 📞 Suporte
-
-Precisa de ajuda? Entre em contato:
 
 - **LinkedIn**: [Nilo Rocha](https://linkedin.com/in/nilo-rocha-)
 - **Issues**: [GitHub Issues](https://github.com/niloRoch/cfem-analytics/issues)
@@ -574,5 +563,6 @@ copies or substantial portions of the Software.
 <img src="https://github.com/niloRoch/datasets/blob/main/assets/LOGO.png" alt="Tech Vision" width="99" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);"/>
 
 </div>
+
 
 
