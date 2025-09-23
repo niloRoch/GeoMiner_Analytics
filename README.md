@@ -118,7 +118,7 @@ cfem-analytics/
     └── test_*.py             # 🧪 Testes unitários
 ```
 
-## 📊 Exemplos de Uso
+## 📊 Casos de Uso
 
 ### Análise Básica
 
@@ -563,6 +563,7 @@ copies or substantial portions of the Software.
 <img src="https://github.com/niloRoch/datasets/blob/main/assets/LOGO.png" alt="Tech Vision" width="99" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);"/>
 
 </div>
+
 
 
 
